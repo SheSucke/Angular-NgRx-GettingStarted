@@ -2,7 +2,7 @@ import {
   createFeatureSelector,
   createReducer,
   createSelector,
-  on
+  on,
 } from '@ngrx/store';
 import { Product } from '../product';
 import * as AppState from './../../state/app.state';
@@ -16,12 +16,14 @@ export interface ProductState {
   showProductCode: boolean;
   currentProduct: Product;
   products: Product[];
+  error: string;
 }
 
 const initatialState: ProductState = {
   showProductCode: true,
   currentProduct: null,
   products: [],
+  error: '',
 };
 
 const getProductFeatureState = createFeatureSelector<ProductState>('products');
@@ -39,6 +41,11 @@ export const getCurrentProduct = createSelector(
 export const getProducts = createSelector(
   getProductFeatureState,
   (state) => state.products
+);
+
+export const getError = createSelector(
+  getProductFeatureState,
+  (state) => state.error
 );
 
 export const productReducer = createReducer<ProductState>(
@@ -71,6 +78,20 @@ export const productReducer = createReducer<ProductState>(
         description: '',
         starRating: 0,
       },
+    };
+  }),
+  on(ProductActions.loadProductsSuccess, (state, action): ProductState => {
+    return {
+      ...state,
+      products: action.products,
+      error: '',
+    };
+  }),
+  on(ProductActions.loadProductsFailure, (state, action): ProductState => {
+    return {
+      ...state,
+      products: [],
+      error: action.error,
     };
   })
 );

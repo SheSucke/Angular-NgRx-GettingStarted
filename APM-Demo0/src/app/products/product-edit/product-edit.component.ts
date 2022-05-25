@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 /* NgRx */
 import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { GenericValidator } from '../../shared/generic-validator';
 import { NumberValidators } from '../../shared/number.validator';
 import { Product } from '../product';
@@ -24,6 +26,7 @@ export class ProductEditComponent implements OnInit {
   displayMessage: { [key: string]: string } = {};
   private validationMessages: { [key: string]: { [key: string]: string } };
   private genericValidator: GenericValidator;
+  product$: Observable<Product | null>;
 
   constructor(
     private store: Store<State>,
@@ -69,9 +72,9 @@ export class ProductEditComponent implements OnInit {
 
     // Watch for changes to the currently selected product
     // TODO: Unsubscribe
-    this.store
+    this.product$ = this.store
       .select(getCurrentProduct)
-      .subscribe((currentProduct) => this.displayProduct(currentProduct));
+      .pipe(tap((currentProduct) => this.displayProduct(currentProduct)));
 
     // Watch for value changes for validation
     this.productForm.valueChanges.subscribe(
@@ -91,9 +94,6 @@ export class ProductEditComponent implements OnInit {
   }
 
   displayProduct(product: Product | null): void {
-    // Set the local product property
-    this.product = product;
-
     if (product) {
       // Reset the form back to pristine
       this.productForm.reset();
